@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Audit logs · P.R.A.M.A.N</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div id="shell"></div>
+    <div class="workspace">
+      <header class="topbar" id="topbar"></header>
+      <main class="content">
+        <div class="page-heading">
+          <div>
+            <div class="eyebrow">Evidence management</div>
+            <h1 id="title">Audit logs</h1>
+            <p class="muted" id="subtitle">
+              An accountable record of activity across the portal.
+            </p>
+          </div>
+          <div id="heading-action">
+            <button id="export">↓ Export XML</button>
+          </div>
+        </div>
+        <div id="message" role="alert"></div>
+        <section class="card">
+          <form class="filters" id="filters">
+            <label
+              >Action<select name="action">
+                <option value="">All actions</option>
+                <option>LOGIN_SUCCESS</option>
+                <option>LOGIN_FAILED</option>
+                <option>LOGOUT</option>
+                <option>EVIDENCE_UPLOADED</option>
+                <option>EVIDENCE_VIEWED</option>
+                <option>EVIDENCE_DOWNLOADED</option>
+                <option>EVIDENCE_VERIFIED</option>
+                <option>EVIDENCE_TRANSFERRED</option>
+                <option>STATUS_CHANGED</option>
+                <option>NOTE_ADDED</option>
+                <option>USER_CREATED</option>
+                <option>USER_DEACTIVATED</option>
+                <option>USER_ACTIVATED</option>
+                <option>XML_EXPORTED</option>
+              </select></label
+            ><label
+              >User<select name="user" id="user-filter">
+                <option value="">All users</option>
+              </select></label
+            ><label
+              >Evidence ID<input
+                name="evidenceId"
+                placeholder="EV-2026-0001" /></label
+            ><label
+              >Start date (UTC)<input type="date" name="startDate" /></label
+            ><label>End date (UTC)<input type="date" name="endDate" /></label
+            ><button>Apply filters</button>
+          </form>
+          <div id="records"><div class="empty">Loading audit logs…</div></div>
+          <div class="pagination" id="pagination"></div>
+        </section>
+        <footer class="footer">
+          P.R.A.M.A.N · Educational prototype for digital evidence integrity
+        </footer>
+      </main>
+    </div>
+    <script type="module" src="/js/audit.js"></script>
+  </body>
+</html>

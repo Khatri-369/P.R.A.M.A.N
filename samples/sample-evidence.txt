@@ -1,0 +1,4 @@
+P.R.A.M.A.N demonstration evidence
+Case: CASE-2026-001
+Description: Synthetic evidence for a college demonstration. No real case data.
+Upload this file, verify its SHA-256 fingerprint, then transfer it for forensic review.

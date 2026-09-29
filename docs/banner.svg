@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="340" viewBox="0 0 1280 340" role="img" aria-labelledby="title desc">
+  <title id="title">P.R.A.M.A.N — Digital Evidence Management</title>
+  <desc id="desc">Navy banner with a teal evidence fingerprint symbol and the words Integrity, Accountability, Trust.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#10283f"/><stop offset="1" stop-color="#173e50"/></linearGradient>
+  </defs>
+  <rect width="1280" height="340" rx="20" fill="url(#bg)"/>
+  <g fill="none" stroke="#31566a" opacity=".65"><circle cx="1110" cy="165" r="110"/><circle cx="1110" cy="165" r="152"/><circle cx="1110" cy="165" r="194"/></g>
+  <rect x="64" y="62" width="56" height="62" rx="12" fill="#214858" stroke="#6cc7b6"/>
+  <path d="M92 77 108 93 92 109 76 93Z M92 85 100 93 92 101 84 93Z" fill="none" stroke="#9ce6d4" stroke-width="2"/>
+  <text x="140" y="101" font-family="Segoe UI,Arial,sans-serif" font-size="17" letter-spacing="3" fill="#8ccec4">DIGITAL EVIDENCE MANAGEMENT</text>
+  <text x="64" y="204" font-family="Segoe UI,Arial,sans-serif" font-size="64" font-weight="700" letter-spacing="5" fill="#ffffff">P.R.A.M.A.N</text>
+  <text x="68" y="248" font-family="Segoe UI,Arial,sans-serif" font-size="20" fill="#b9cfdd">Every file has a story. Preserve its integrity.</text>
+  <text x="68" y="301" font-family="Segoe UI,Arial,sans-serif" font-size="12" letter-spacing="3" fill="#74bdae">INTEGRITY / ACCOUNTABILITY / TRUST</text>
+  <g stroke="#7dd4c1" stroke-width="2" fill="#173e50"><path d="M1020 166h180M1110 76v180" opacity=".5"/><circle cx="1110" cy="165" r="37"/><circle cx="1020" cy="166" r="8"/><circle cx="1200" cy="166" r="8"/><circle cx="1110" cy="76" r="8"/><circle cx="1110" cy="256" r="8"/><path d="m1094 165 11 11 22-23" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Evidence registry · P.R.A.M.A.N</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div id="shell"></div>
+    <div class="workspace">
+      <header class="topbar" id="topbar"></header>
+      <main class="content">
+        <div class="page-heading">
+          <div>
+            <div class="eyebrow">Evidence management</div>
+            <h1 id="title">Evidence registry</h1>
+            <p class="muted" id="subtitle">
+              Search, inspect, and verify your digital evidence.
+            </p>
+          </div>
+          <div id="heading-action"></div>
+        </div>
+        <div id="message" role="alert"></div>
+        <section class="card">
+          <form class="filters" id="filters">
+            <label class="search"
+              >Search evidence<input
+                name="search"
+                placeholder="Title, evidence ID, or description" /></label
+            ><label
+              >Status<select name="status">
+                <option value="">All statuses</option>
+                <option>Uploaded</option>
+                <option>Under Review</option>
+                <option>Assigned</option>
+                <option>Verified</option>
+                <option>Archived</option>
+              </select></label
+            ><label
+              >Type<select name="type">
+                <option value="">All types</option>
+                <option>Document</option>
+                <option>Image</option>
+                <option>Text</option>
+                <option>Other</option>
+              </select></label
+            ><label
+              >Case number<input
+                name="caseNumber"
+                placeholder="Exact case number" /></label
+            ><button>Search</button>
+          </form>
+          <div id="records"><div class="empty">Loading evidence…</div></div>
+          <div id="pagination" class="pagination"></div>
+        </section>
+        <footer class="footer">
+          P.R.A.M.A.N · Educational prototype for digital evidence integrity
+        </footer>
+      </main>
+    </div>
+    <script type="module" src="/js/evidence.js"></script>
+  </body>
+</html>

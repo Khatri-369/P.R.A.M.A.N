@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Upload evidence · P.R.A.M.A.N</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div id="shell"></div>
+    <div class="workspace">
+      <header class="topbar" id="topbar"></header>
+      <main class="content">
+        <div class="page-heading">
+          <div>
+            <div class="eyebrow">Evidence management</div>
+            <h1 id="title">Upload evidence</h1>
+            <p class="muted" id="subtitle">
+              Create an evidence record with a SHA-256 fingerprint.
+            </p>
+          </div>
+          <div id="heading-action"></div>
+        </div>
+        <div id="message" role="alert"></div>
+        <div class="columns">
+          <section class="card">
+            <div class="card-head">
+              <h2>Evidence information</h2>
+              <span class="badge blue">New record</span>
+            </div>
+            <form id="upload-form" class="card-body">
+              <div class="form-grid">
+                <label
+                  >Evidence title<input
+                    name="title"
+                    maxlength="200"
+                    required
+                    placeholder="e.g. Site inspection report" /></label
+                ><label
+                  >Case number<input
+                    name="caseNumber"
+                    maxlength="100"
+                    required
+                    placeholder="e.g. CASE-2026-014" /></label
+                ><label class="full"
+                  >Description<textarea
+                    name="description"
+                    maxlength="4000"
+                    placeholder="Describe the evidence and its source"
+                  ></textarea></label
+                ><label class="full"
+                  >Evidence type<select name="evidenceType" required>
+                    <option value="">Select type</option>
+                    <option>Document</option>
+                    <option>Image</option>
+                    <option>Text</option>
+                    <option>Other</option>
+                  </select></label
+                ><label class="full upload-zone"
+                  ><strong>Choose the original evidence file</strong
+                  ><input
+                    type="file"
+                    name="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.txt,.docx"
+                    required
+                  /><small
+                    >PDF, JPG, PNG, TXT or DOCX · Maximum 10 MB</small
+                  ></label
+                ><label class="full"
+                  >Initial notes<textarea
+                    name="notes"
+                    maxlength="4000"
+                    placeholder="Collection context or handling instructions"
+                  ></textarea>
+                </label>
+              </div>
+              <div class="form-footer">
+                <a href="/evidence.html" class="button secondary">Cancel</a
+                ><button>↑ Upload evidence</button>
+              </div>
+            </form>
+          </section>
+          <aside>
+            <section class="card">
+              <div class="card-body">
+                <div class="eyebrow">How it works</div>
+                <h2>Integrity starts here.</h2>
+                <p class="muted">
+                  Each file receives a unique evidence ID and a SHA-256
+                  fingerprint calculated from its contents.
+                </p>
+                <div class="notice">
+                  The original fingerprint is stored as a reference. Future
+                  checks compare the stored file against this fingerprint.
+                </div>
+                <p class="footer">
+                  Uploading also starts the chain of custody and records an
+                  audit event.
+                </p>
+              </div>
+            </section>
+          </aside>
+        </div>
+        <footer class="footer">
+          P.R.A.M.A.N · Educational prototype for digital evidence integrity
+        </footer>
+      </main>
+    </div>
+    <script type="module" src="/js/upload.js"></script>
+  </body>
+</html>

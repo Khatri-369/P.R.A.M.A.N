@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Sign in · P.R.A.M.A.N</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <main class="login-page">
+      <section class="login-story">
+        <a class="brand" href="/"
+          ><span class="brand-mark">◈</span>P.R.A.M.A.N</a
+        >
+        <div>
+          <div class="eyebrow">Digital evidence management</div>
+          <h1>Every file has a story.<br />Preserve its integrity.</h1>
+          <p>
+            Record evidence, verify authenticity, and follow every handover in
+            one accountable workspace.
+          </p>
+        </div>
+        <div class="story-foot">
+          PORTAL FOR RECORDING AND MANAGING AUTHENTIC NODES
+        </div>
+      </section>
+      <section class="login-panel">
+        <div class="login-box">
+          <div class="login-kicker">P.R.A.M.A.N / SECURE ACCESS</div>
+          <h2>Welcome back</h2>
+          <p class="muted">Sign in to your evidence workspace.</p>
+          <div id="message" role="alert"></div>
+          <form id="login-form">
+            <label
+              >Email address<input
+                type="email"
+                name="email"
+                placeholder="you@praman.com"
+                autocomplete="username"
+                required
+                maxlength="254" /></label
+            ><label
+              >Password<input
+                type="password"
+                name="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+                maxlength="200" /></label
+            ><button type="submit">Sign in &nbsp; →</button>
+          </form>
+          <div class="notice">
+            Access is restricted to authorized personnel. Your activity is
+            recorded in the audit log.
+          </div>
+          <p class="footer">
+            An educational prototype for digital evidence integrity.<br />Not a
+            legally certified evidence repository.
+          </p>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/js/auth.js"></script>
+  </body>
+</html>

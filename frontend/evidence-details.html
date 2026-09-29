@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Evidence details · P.R.A.M.A.N</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div id="shell"></div>
+    <div class="workspace">
+      <header class="topbar" id="topbar"></header>
+      <main class="content">
+        <div class="page-heading">
+          <div>
+            <div class="eyebrow">Evidence management</div>
+            <h1 id="title">Evidence details</h1>
+            <p class="muted" id="subtitle">Loading evidence record…</p>
+          </div>
+          <div id="heading-action"></div>
+        </div>
+        <div id="message" role="alert"></div>
+        <section class="card">
+          <div class="card-head">
+            <h2>Evidence record</h2>
+            <div class="actions" id="evidence-actions"></div>
+          </div>
+          <div class="card-body" id="detail"></div>
+        </section>
+        <div class="columns">
+          <section>
+            <div class="card">
+              <div class="card-head"><h2>Case notes</h2></div>
+              <div class="card-body" id="notes"></div>
+            </div>
+            <div class="card" id="note-card" hidden>
+              <div class="card-head"><h2>Add a note</h2></div>
+              <form id="note-form" class="card-body">
+                <label
+                  >Investigation / forensic note<textarea
+                    name="text"
+                    required
+                    maxlength="4000"
+                  ></textarea>
+                </label>
+                <div class="form-footer"><button>Add note</button></div>
+              </form>
+            </div>
+          </section>
+          <aside>
+            <div class="card" id="transfer-card" hidden>
+              <div class="card-head"><h2>Transfer evidence</h2></div>
+              <form id="transfer-form" class="card-body">
+                <label
+                  >New custodian<select
+                    name="toUserId"
+                    id="toUserId"
+                    required
+                  ></select></label
+                ><br /><label
+                  >Reason for transfer<textarea
+                    name="remarks"
+                    required
+                    maxlength="2000"
+                  ></textarea>
+                </label>
+                <div class="form-footer">
+                  <button>Transfer custody →</button>
+                </div>
+              </form>
+            </div>
+            <div class="card" id="status-card" hidden>
+              <div class="card-head"><h2>Review status</h2></div>
+              <form id="status-form" class="card-body">
+                <label>Status<select id="status" name="status"></select></label>
+                <div class="form-footer"><button>Update status</button></div>
+              </form>
+            </div>
+          </aside>
+        </div>
+        <footer class="footer">
+          P.R.A.M.A.N · Educational prototype for digital evidence integrity
+        </footer>
+      </main>
+    </div>
+    <script type="module" src="/js/details.js"></script>
+  </body>
+</html>

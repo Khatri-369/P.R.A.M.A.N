@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>P.R.A.M.A.N Dashboard · P.R.A.M.A.N</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div id="shell"></div>
+    <div class="workspace">
+      <header class="topbar" id="topbar"></header>
+      <main class="content">
+        <div class="page-heading">
+          <div>
+            <div class="eyebrow">Evidence management</div>
+            <h1 id="title">P.R.A.M.A.N Dashboard</h1>
+            <p class="muted" id="subtitle">
+              An overview of your evidence workspace.
+            </p>
+          </div>
+          <div id="heading-action"></div>
+        </div>
+        <div id="message" role="alert"></div>
+        <section
+          id="stats"
+          class="stats"
+          aria-label="Evidence statistics"
+        ></section>
+        <section class="card">
+          <div class="card-head">
+            <h2>Recent evidence</h2>
+            <a href="/evidence.html">View all evidence →</a>
+          </div>
+          <div id="recent"><div class="empty">Loading evidence…</div></div>
+        </section>
+        <div class="columns">
+          <section class="card">
+            <div class="card-head">
+              <h2>Recent activity</h2>
+              <span class="badge good">Custody events</span>
+            </div>
+            <div class="card-body" id="activity"></div>
+          </section>
+          <section class="card">
+            <div class="card-head"><h2>Evidence by type</h2></div>
+            <div class="card-body" id="types"></div>
+          </section>
+        </div>
+        <footer class="footer">
+          P.R.A.M.A.N · Educational prototype for digital evidence integrity
+        </footer>
+      </main>
+    </div>
+    <script type="module" src="/js/dashboard.js"></script>
+  </body>
+</html>

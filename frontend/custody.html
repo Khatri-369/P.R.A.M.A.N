@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Chain of custody · P.R.A.M.A.N</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div id="shell"></div>
+    <div class="workspace">
+      <header class="topbar" id="topbar"></header>
+      <main class="content">
+        <div class="page-heading">
+          <div>
+            <div class="eyebrow">Evidence management</div>
+            <h1 id="title">Chain of custody</h1>
+            <p class="muted" id="subtitle">
+              Follow every recorded action, handover, and integrity check.
+            </p>
+          </div>
+          <div id="heading-action"></div>
+        </div>
+        <div id="message" role="alert"></div>
+        <section class="card">
+          <form id="lookup" class="filters">
+            <label class="search"
+              >Find an evidence record<input
+                id="query"
+                placeholder="Enter evidence ID, case number or title"
+                required /></label
+            ><button>Find evidence</button>
+          </form>
+          <div class="card-body actions" id="matches"></div>
+        </section>
+        <section class="card">
+          <div class="card-head">
+            <h2 id="record-title">Evidence timeline</h2>
+            <button class="secondary" id="export" hidden>↓ Export XML</button>
+          </div>
+          <div class="card-body" id="timeline">
+            <div class="empty">
+              Find and select evidence to view its custody history.
+            </div>
+          </div>
+        </section>
+        <footer class="footer">
+          P.R.A.M.A.N · Educational prototype for digital evidence integrity
+        </footer>
+      </main>
+    </div>
+    <script type="module" src="/js/custody.js"></script>
+  </body>
+</html>
