@@ -1,4 +1,5 @@
 import { shell } from "./auth.js";
+import { icon, skeleton } from "./ui.js";
 import {
   api,
   evidenceTable,
@@ -15,6 +16,7 @@ async function load() {
       new FormData(document.querySelector("#filters")),
     );
   params.set("page", page);
+  document.querySelector("#records").innerHTML = skeleton("Loading evidence");
   const data = await api(`/evidence?${params}`);
   if (current !== revision) return;
   document.querySelector("#records").innerHTML = evidenceTable(data.items);
@@ -36,6 +38,19 @@ async function load() {
   );
 }
 if (await shell("evidence")) {
+  document.querySelector("#heading-action").innerHTML =
+    '<span class="badge role">' + icon("shield") + " Role-scoped access</span>";
+  document
+    .querySelector("#filters")
+    .insertAdjacentHTML(
+      "beforeend",
+      '<button type="reset" class="filter-reset">Reset</button>',
+    );
+  document.querySelector("#filters").onreset = () =>
+    setTimeout(() => {
+      page = 1;
+      task(null, load);
+    });
   document.querySelector("#filters").onsubmit = (event) => {
     event.preventDefault();
     page = 1;

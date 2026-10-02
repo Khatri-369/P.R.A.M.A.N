@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Evidence registry · P.R.A.M.A.N</title>
     <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/command-center.css" />
   </head>
   <body>
     <div id="shell"></div>
@@ -13,7 +14,7 @@
       <main class="content">
         <div class="page-heading">
           <div>
-            <div class="eyebrow">Evidence management</div>
+            <div class="eyebrow">PRAMĀN / EVIDENCE INTELLIGENCE</div>
             <h1 id="title">Evidence registry</h1>
             <p class="muted" id="subtitle">
               Search, inspect, and verify your digital evidence.
@@ -51,11 +52,22 @@
                 placeholder="Exact case number" /></label
             ><button>Search</button>
           </form>
-          <div id="records"><div class="empty">Loading evidence…</div></div>
+          <div id="records">
+            <div
+              class="skeleton-group"
+              role="status"
+              aria-label="Loading evidence"
+            >
+              <span class="sr-only">Loading evidence…</span>
+              <div class="skeleton-row">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
           <div id="pagination" class="pagination"></div>
         </section>
         <footer class="footer">
-          P.R.A.M.A.N · Educational prototype for digital evidence integrity
+          PRAMĀN · Digital evidence & chain of custody · Educational prototype
         </footer>
       </main>
     </div>

@@ -1,13 +1,22 @@
 import { shell } from "./auth.js";
 import { api, escape, date, user, download, task } from "./api.js";
+import { timelineMarkup, emptyState, skeleton } from "./ui.js";
 let selected = new URLSearchParams(location.search).get("id");
 async function load() {
   if (!selected) return;
+  document.querySelector("#timeline").innerHTML = skeleton(
+    "Loading custody timeline",
+  );
   const data = await api(`/custody/${selected}`);
   document.querySelector("#record-title").textContent =
     `${data.evidenceId} · Custody timeline`;
-  document.querySelector("#timeline").innerHTML =
-    `<ol class="timeline">${data.logs.map((log) => `<li><strong>${escape(log.action.replaceAll("_", " "))}</strong><p>${escape(log.performedBy?.name || "System")}<br>${log.fromUser || log.toUser ? `From: ${escape(log.fromUser?.name || "—")} → To: ${escape(log.toUser?.name || "—")}<br>` : ""}${escape(log.remarks)}</p><small>${date(log.timestamp)}</small></li>`).join("")}</ol>`;
+  document.querySelector("#timeline").innerHTML = data.logs.length
+    ? timelineMarkup(data.logs, escape, date)
+    : emptyState(
+        "No custody events",
+        "Recorded activity will appear here.",
+        "custody",
+      );
   document.querySelector("#export").hidden = user().role !== "admin";
 }
 if (await shell("custody")) {
@@ -30,6 +39,10 @@ if (await shell("custody")) {
           (button.onclick = () =>
             task(button, async () => {
               selected = button.dataset.id;
+              document.querySelectorAll("[data-id]").forEach((el) => {
+                el.classList.toggle("selected-match", el === button);
+                el.setAttribute("aria-pressed", String(el === button));
+              });
               history.replaceState(null, "", `?id=${selected}`);
               await load();
             })),

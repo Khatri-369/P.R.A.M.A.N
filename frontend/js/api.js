@@ -1,3 +1,4 @@
+import { icon, emptyState } from "./ui.js";
 export const user = () => {
   try {
     return JSON.parse(sessionStorage.getItem("user"));
@@ -62,15 +63,40 @@ export function message(text, isError = false) {
   const el = document.querySelector("#message");
   el.className = `message notice ${isError ? "error" : "success"}`;
   el.textContent = text;
+  el.tabIndex = -1;
+  if (isError) el.focus({ preventScroll: false });
+  document.querySelector(".toast")?.remove();
+  if (!isError) {
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.setAttribute("role", "status");
+    toast.innerHTML = icon("check");
+    const content = document.createElement("span");
+    content.textContent = text.split("\n")[0];
+    toast.append(content);
+    document.body.append(toast);
+    setTimeout(() => toast.remove(), 4500);
+  }
 }
 export async function task(button, callback) {
-  if (button) button.disabled = true;
+  if (button) {
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+  }
   try {
     await callback();
   } catch (error) {
+    document.querySelectorAll(".skeleton-group").forEach((el) => {
+      el.className = "empty";
+      el.textContent =
+        "Unable to load these records. Reload the page to retry.";
+    });
     message(error.message, true);
   } finally {
-    if (button) button.disabled = false;
+    if (button) {
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+    }
   }
 }
 export function badge(value) {
@@ -78,8 +104,23 @@ export function badge(value) {
 }
 export function evidenceTable(items, compact = false) {
   if (!items.length)
-    return '<div class="empty">No evidence found. New records will appear here.</div>';
-  return `<div class="table-wrap"><table><thead><tr><th>Evidence ID / Title</th><th>Case number</th><th>Type</th>${compact ? "" : "<th>Current holder</th>"}<th>Status</th><th>Integrity</th><th>Uploaded</th><th></th></tr></thead><tbody>${items.map((e) => `<tr><td class="title-cell"><a href="/evidence-details.html?id=${e._id}"><strong class="mono">${escape(e.evidenceId)}</strong><br><span>${escape(e.title)}</span></a></td><td>${escape(e.caseNumber)}</td><td>${escape(e.evidenceType)}</td>${compact ? "" : `<td>${escape(e.currentHolder?.name)}</td>`}<td>${badge(e.status)}</td><td>${badge(e.integrityStatus)}</td><td><small>${date(e.uploadedAt)}</small></td><td><div class="actions"><a href="/evidence-details.html?id=${e._id}">View ↗</a>${compact ? "" : `<a href="/custody.html?id=${e._id}">Custody</a>${user()?.role !== "admin" ? `<button class="secondary" data-verify="${e._id}">Verify</button>` : ""}`}</div></td></tr>`).join("")}</tbody></table></div>`;
+    return emptyState(
+      "No evidence found",
+      "New records will appear here. Try a different search or clear the filters.",
+      "evidence",
+    );
+  return (
+    '<div class="table-wrap"><table class="responsive-table" aria-label="Evidence records"><thead><tr><th scope="col">Evidence / Record</th><th scope="col">Case number</th><th scope="col">Type</th>' +
+    (compact ? "" : '<th scope="col">Custodian</th>') +
+    '<th scope="col">Status</th><th scope="col">Integrity</th><th scope="col">Uploaded</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead><tbody>' +
+    items
+      .map(
+        (e) =>
+          `<tr><td class="title-cell record-primary" data-label="Evidence"><div class="record-name"><span class="file-icon">${icon(e.evidenceType === "Image" ? "image" : "file")}</span><a href="/evidence-details.html?id=${e._id}"><strong class="mono">${escape(e.evidenceId)}</strong><span>${escape(e.title)}</span></a></div></td><td data-label="Case number"><span class="mono">${escape(e.caseNumber)}</span></td><td data-label="Type"><span class="type-label">${escape(e.evidenceType)}</span></td>${compact ? "" : `<td data-label="Custodian"><div class="person-cell"><span class="avatar">${escape(e.currentHolder?.name?.[0] || "?")}</span>${escape(e.currentHolder?.name || "Unassigned")}</div></td>`}<td data-label="Status">${badge(e.status)}</td><td data-label="Integrity">${badge(e.integrityStatus)}</td><td data-label="Uploaded"><small>${date(e.uploadedAt)}</small></td><td class="record-actions"><div class="row-actions"><a href="/evidence-details.html?id=${e._id}" aria-label="View ${escape(e.evidenceId)}">View ↗</a>${compact ? "" : `<a href="/custody.html?id=${e._id}" aria-label="Custody for ${escape(e.evidenceId)}">Custody</a>${user()?.role !== "admin" ? '<button class="secondary" data-verify="' + e._id + '" aria-label="Verify ' + escape(e.evidenceId) + '">Verify</button>' : ""}`}</div></td></tr>`,
+      )
+      .join("") +
+    "</tbody></table></div>"
+  );
 }
 export function pager(data, onPage) {
   const el = document.querySelector("#pagination");

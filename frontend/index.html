@@ -3,61 +3,145 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Sign in · P.R.A.M.A.N</title>
+    <meta name="theme-color" content="#cbd2d2" />
+    <title>Secure access · PRAMĀN</title>
     <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/command-center.css" />
   </head>
-  <body>
+  <body class="login-body">
+    <a class="skip-link" href="#login-form">Skip to sign in</a>
     <main class="login-page">
       <section class="login-story">
         <a class="brand" href="/"
-          ><span class="brand-mark">◈</span>P.R.A.M.A.N</a
+          ><span class="brand-mark"
+            ><svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              aria-hidden="true"
+            >
+              <path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6z" />
+              <path d="m8 12 3 3 5-6" /></svg></span
+          ><span>PRAMĀN<small>EVIDENCE INTELLIGENCE</small></span></a
         >
-        <div>
-          <div class="eyebrow">Digital evidence management</div>
-          <h1>Every file has a story.<br />Preserve its integrity.</h1>
+        <div class="login-narrative">
+          <div class="eyebrow">
+            <span class="status-dot"></span> DIGITAL EVIDENCE. ACCOUNTABLE BY
+            DESIGN.
+          </div>
+          <h1>The evidence matters.<br /><span>So does every step.</span></h1>
           <p>
-            Record evidence, verify authenticity, and follow every handover in
-            one accountable workspace.
+            A clear record. A verifiable fingerprint. An unbroken view of who
+            handled what, and when.
           </p>
+          <div class="forensic-visual" aria-hidden="true">
+            <div class="visual-label">
+              <span>CHAIN OF CUSTODY</span><span>SHA—256</span>
+            </div>
+            <div class="evidence-orbit">
+              <div class="orbit orbit-one"></div>
+              <div class="orbit orbit-two"></div>
+              <div class="orbit-cross"></div>
+              <div class="orbit-core">
+                <svg
+                  viewBox="0 0 80 80"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.4"
+                >
+                  <path d="M40 12 18 21v17c0 16 22 29 22 29s22-13 22-29V21z" />
+                  <path
+                    d="M29 38a11 11 0 0 1 22 0v6M24 36a16 16 0 0 1 32 0v9M34 48V37a6 6 0 0 1 12 0v9l-3 10M39 38v16M29 43v6"
+                  />
+                </svg>
+              </div>
+              <span class="orbit-tag tag-one">01 / RECORD</span
+              ><span class="orbit-tag tag-two">02 / VERIFY</span
+              ><span class="orbit-tag tag-three">03 / TRACE</span>
+            </div>
+            <div class="visual-footer">
+              <span class="status-dot"></span> A fingerprint for every file. A
+              history for every handover.
+            </div>
+          </div>
         </div>
         <div class="story-foot">
-          PORTAL FOR RECORDING AND MANAGING AUTHENTIC NODES
+          <span>PORTAL FOR RECORDING AND MANAGING AUTHENTIC NODES</span
+          ><span>PRAMĀN / 01</span>
         </div>
       </section>
       <section class="login-panel">
         <div class="login-box">
-          <div class="login-kicker">P.R.A.M.A.N / SECURE ACCESS</div>
-          <h2>Welcome back</h2>
+          <span class="access-label"
+            ><svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              aria-hidden="true"
+            >
+              <rect x="5" y="10" width="14" height="11" rx="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+            AUTHORIZED PERSONNEL</span
+          >
+          <h2>Welcome back.</h2>
           <p class="muted">Sign in to your evidence workspace.</p>
-          <div id="message" role="alert"></div>
+          <div id="message" role="alert" tabindex="-1"></div>
           <form id="login-form">
-            <label
-              >Email address<input
-                type="email"
-                name="email"
-                placeholder="you@praman.com"
-                autocomplete="username"
-                required
-                maxlength="254" /></label
-            ><label
-              >Password<input
+            <label for="email">Email address</label
+            ><input
+              id="email"
+              type="email"
+              name="email"
+              placeholder="you@praman.com"
+              autocomplete="username"
+              required
+              maxlength="254"
+            />
+            <div class="password-label">
+              <label for="password">Password</label><span>Case sensitive</span>
+            </div>
+            <div class="password-control">
+              <input
+                id="password"
                 type="password"
                 name="password"
                 placeholder="Enter your password"
                 autocomplete="current-password"
                 required
-                maxlength="200" /></label
-            ><button type="submit">Sign in &nbsp; →</button>
+                maxlength="200"
+              /><button
+                id="password-toggle"
+                type="button"
+                aria-pressed="false"
+                aria-controls="password"
+              >
+                Show
+              </button>
+            </div>
+            <button type="submit" class="login-submit">
+              Sign in to workspace <span aria-hidden="true">→</span>
+            </button>
           </form>
-          <div class="notice">
-            Access is restricted to authorized personnel. Your activity is
-            recorded in the audit log.
+          <div class="login-security">
+            <span class="security-mark">◇</span>
+            <p>
+              Access is role-restricted.<br /><span
+                >Sign-ins and evidence activity are recorded.</span
+              >
+            </p>
           </div>
-          <p class="footer">
-            An educational prototype for digital evidence integrity.<br />Not a
-            legally certified evidence repository.
+          <p class="login-help">
+            Need access? Contact your workspace administrator.
           </p>
         </div>
+        <footer class="login-footer">
+          Educational prototype <span>·</span> Not a certified evidence
+          repository
+        </footer>
       </section>
     </main>
     <script type="module" src="/js/auth.js"></script>

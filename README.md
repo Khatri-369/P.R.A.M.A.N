@@ -25,11 +25,22 @@ Each upload receives a SHA-256 fingerprint. Later checks compare the stored file
 > [!NOTE]
 > This is an educational prototype demonstrating digital evidence integrity. It is not a legally certified or tamper-proof evidence repository.
 
-## Preview
+## Preview the application
 
-![PRAMAN dashboard showing a verified evidence record and role-based navigation](docs/dashboard-preview.png)
+Run `npm install` followed by `npm run demo`, then open [localhost:5000](http://localhost:5000). Use the [demo accounts below](#quick-demo) to explore the investigator, forensic officer, and administrator workspaces.
 
-_Actual application screenshot using synthetic classroom evidence._
+## Command-center interface
+
+The application now uses a shared mineral gray, graphite, and muted teal visual system across all eight pages: light navigation, readable evidence records, integrity panels, custody timelines, responsive record cards, and accessible confirmation dialogs.
+
+The login and overview feature a real, interactive WebGL evidence core: a solid, faceted orange icosahedron with directional lighting and orbital rings against a black instrument panel. It uses local procedural geometry with no 3D library, external model, or texture downloads. The scene loads near the viewport, renders at a capped frame rate and pixel density, pauses when hidden, and includes a keyboard-accessible motion control. Reduced-motion preferences show a still scene; unavailable WebGL retains the CSS fallback.
+
+- **Responsive navigation:** role-aware links, a mobile drawer, keyboard focus management, and a skip link.
+- **Evidence workspace:** mobile record cards, search/reset controls, clear empty states, and loading placeholders.
+- **Evidence actions:** drag-and-drop upload, upload progress state, hash copying, and custody transfer confirmation.
+- **Activity history:** custody timelines, expandable audit details, and success/error feedback.
+
+Visual effects are isolated in `frontend/js/motion.js` and `frontend/js/core-scene.js`. The shared theme is in `frontend/css/command-center.css`; existing layout rules remain in `frontend/css/style.css`. Manrope is self-hosted, with its license included in `frontend/fonts/OFL.txt`. All dashboard values continue to come from the existing API.
 
 ## What you can do
 
@@ -44,7 +55,7 @@ _Actual application screenshot using synthetic classroom evidence._
 
 ## Technology
 
-- **Frontend:** HTML5 · CSS3 · vanilla JavaScript · Fetch API · responsive layouts
+- **Frontend:** HTML5 · CSS3 · vanilla JavaScript · native WebGL · Fetch API · self-hosted Manrope · responsive layouts
 - **Backend:** Node.js · Express 5 · Mongoose · MongoDB replica-set transactions
 - **Authentication:** JWT · bcrypt · backend role and assignment checks
 - **Evidence:** Multer · Node crypto · SHA-256 · xmlbuilder2

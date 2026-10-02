@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>P.R.A.M.A.N Dashboard · P.R.A.M.A.N</title>
     <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/command-center.css" />
   </head>
   <body>
     <div id="shell"></div>
@@ -13,8 +14,8 @@
       <main class="content">
         <div class="page-heading">
           <div>
-            <div class="eyebrow">Evidence management</div>
-            <h1 id="title">P.R.A.M.A.N Dashboard</h1>
+            <div class="eyebrow">PRAMĀN / EVIDENCE INTELLIGENCE</div>
+            <h1 id="title">Evidence overview</h1>
             <p class="muted" id="subtitle">
               An overview of your evidence workspace.
             </p>
@@ -22,6 +23,11 @@
           <div id="heading-action"></div>
         </div>
         <div id="message" role="alert"></div>
+        <section
+          id="overview-banner"
+          class="overview-banner"
+          aria-label="Evidence workflow"
+        ></section>
         <section
           id="stats"
           class="stats"
@@ -32,7 +38,18 @@
             <h2>Recent evidence</h2>
             <a href="/evidence.html">View all evidence →</a>
           </div>
-          <div id="recent"><div class="empty">Loading evidence…</div></div>
+          <div id="recent">
+            <div
+              class="skeleton-group"
+              role="status"
+              aria-label="Loading evidence"
+            >
+              <span class="sr-only">Loading evidence…</span>
+              <div class="skeleton-row">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
         </section>
         <div class="columns">
           <section class="card">
@@ -48,7 +65,7 @@
           </section>
         </div>
         <footer class="footer">
-          P.R.A.M.A.N · Educational prototype for digital evidence integrity
+          PRAMĀN · Digital evidence & chain of custody · Educational prototype
         </footer>
       </main>
     </div>

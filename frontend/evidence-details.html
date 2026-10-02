@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Evidence details · P.R.A.M.A.N</title>
     <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/command-center.css" />
   </head>
   <body>
     <div id="shell"></div>
@@ -13,7 +14,7 @@
       <main class="content">
         <div class="page-heading">
           <div>
-            <div class="eyebrow">Evidence management</div>
+            <div class="eyebrow">PRAMĀN / EVIDENCE INTELLIGENCE</div>
             <h1 id="title">Evidence details</h1>
             <p class="muted" id="subtitle">Loading evidence record…</p>
           </div>
@@ -25,7 +26,14 @@
             <h2>Evidence record</h2>
             <div class="actions" id="evidence-actions"></div>
           </div>
-          <div class="card-body" id="detail"></div>
+          <div class="card-body record-layout" id="detail"></div>
+        </section>
+        <section class="card">
+          <div class="card-head">
+            <h2>Custody at a glance</h2>
+            <a id="full-custody" href="/custody.html">Full timeline →</a>
+          </div>
+          <div class="card-body" id="custody-preview"></div>
         </section>
         <div class="columns">
           <section>
@@ -79,7 +87,7 @@
           </aside>
         </div>
         <footer class="footer">
-          P.R.A.M.A.N · Educational prototype for digital evidence integrity
+          PRAMĀN · Digital evidence & chain of custody · Educational prototype
         </footer>
       </main>
     </div>
