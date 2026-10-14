@@ -1,21 +1,36 @@
-import { Router } from "express";
-import * as controller from "../controllers/evidenceController.js";
-import { roles } from "../middleware/roleMiddleware.js";
-import { upload } from "../middleware/uploadMiddleware.js";
-const router = Router();
-router.get("/", controller.listEvidence);
-router.post("/", roles("investigator"), upload, controller.uploadEvidence);
-router.get("/:id", controller.details);
-router.get("/:id/download", controller.download);
-router.post(
-  "/:id/verify",
-  roles("investigator", "forensic"),
-  controller.verify,
-);
-router.post(
-  "/:id/notes",
-  roles("investigator", "forensic"),
-  controller.addNote,
-);
-router.patch("/:id/status", roles("forensic"), controller.changeStatus);
-export default router;
+const express = require('express');
+const router = express.Router();
+const {
+  uploadEvidence,
+  getEvidenceList,
+  getEvidenceById,
+  verifyEvidence,
+  addEvidenceNote,
+  updateEvidenceStatus,
+  downloadEvidence,
+} = require('../controllers/evidenceController');
+const { protect } = require('../middleware/authMiddleware');
+const { authorize } = require('../middleware/roleMiddleware');
+const upload = require('../middleware/uploadMiddleware');
+
+// List & Upload (Upload restricted strictly to Investigation Officer)
+router
+  .route('/')
+  .get(protect, getEvidenceList)
+  .post(protect, authorize('investigator'), upload.single('file'), uploadEvidence);
+
+// Specific evidence details & download
+router.get('/:id', protect, getEvidenceById);
+router.get('/:id/download', protect, downloadEvidence);
+
+// Verification (All evidence custodians / officers with access can verify integrity)
+router.post('/:id/verify', protect, verifyEvidence);
+router.get('/:id/verify', protect, verifyEvidence);
+
+// Notes (Investigator & Forensic Expert notes)
+router.post('/:id/notes', protect, authorize('investigator', 'forensic'), addEvidenceNote);
+
+// Status update (Forensic Officer only)
+router.patch('/:id/status', protect, authorize('forensic'), updateEvidenceStatus);
+
+module.exports = router;

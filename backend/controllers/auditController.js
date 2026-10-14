@@ -1,77 +1,127 @@
-import AuditLog from "../models/AuditLog.js";
-import Evidence from "../models/Evidence.js";
-import { create } from "xmlbuilder2";
-import { audit, fail, field, id, ok, paging } from "../utils/common.js";
-async function filterFor(query) {
-  const filter = {};
-  if (query.action) filter.action = field(query.action, "Action", 100);
-  if (query.user) filter.user = id(query.user);
-  if (query.evidenceId) {
-    const evidence = await Evidence.findOne({
-      evidenceId: field(query.evidenceId, "Evidence ID", 50),
-    });
-    filter.evidence = evidence?._id || null;
-  }
-  if (query.evidenceId && filter.evidence === null) filter._id = null;
-  if (query.startDate || query.endDate) {
-    filter.timestamp = {};
-    for (const [key, operator] of [
-      ["startDate", "$gte"],
-      ["endDate", "$lte"],
-    ])
-      if (query[key]) {
-        if (
-          typeof query[key] !== "string" ||
-          !/^\d{4}-\d{2}-\d{2}$/.test(query[key])
-        )
-          fail(400, "Use YYYY-MM-DD dates.");
-        const date = new Date(
-          query[key] +
-            (key === "endDate" ? "T23:59:59.999Z" : "T00:00:00.000Z"),
-        );
-        if (Number.isNaN(date.getTime())) fail(400, "Invalid date.");
-        filter.timestamp[operator] = date;
+const { create } = require('xmlbuilder2');
+const { supabase } = require('../config/db');
+const { logAudit } = require('../utils/auditLogger');
+const { populateUsers, populateEvidence } = require('../utils/populateHelper');
+
+// @desc    Get paginated and filtered audit logs
+// @route   GET /api/audit
+// @access  Private (Admin)
+const getAuditLogs = async (req, res, next) => {
+  try {
+    const { action, userId, evidenceId, startDate, endDate, page = 1, limit = 20 } = req.query;
+
+    let query = supabase.from('audit_logs').select('*', { count: 'exact' });
+
+    if (action) {
+      query = query.eq('action', action);
+    }
+
+    if (userId) {
+      query = query.eq('user', userId);
+    }
+
+    if (evidenceId) {
+      // Find evidence ID by code or check if evidenceId is UUID
+      const { data: ev } = await supabase
+        .from('evidence')
+        .select('id')
+        .or(`id.eq.${evidenceId},evidenceId.eq.${evidenceId}`)
+        .maybeSingle();
+
+      if (ev) {
+        query = query.eq('evidence', ev.id);
+      } else {
+        query = query.eq('evidence', evidenceId);
       }
-    if (filter.timestamp.$gte > filter.timestamp.$lte)
-      fail(400, "Start date must precede end date.");
+    }
+
+    if (startDate) {
+      query = query.gte('timestamp', new Date(startDate).toISOString());
+    }
+    if (endDate) {
+      query = query.lte('timestamp', new Date(endDate).toISOString());
+    }
+
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 20;
+    const skip = (pageNum - 1) * limitNum;
+
+    query = query.order('timestamp', { ascending: false }).range(skip, skip + limitNum - 1);
+
+    const { data: logs, count: total, error } = await query;
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    let populated = await populateUsers(logs || [], ['user']);
+    populated = await populateEvidence(populated);
+
+    res.status(200).json({
+      success: true,
+      count: populated.length,
+      total: total || 0,
+      page: pageNum,
+      pages: Math.ceil((total || 0) / limitNum) || 1,
+      data: populated,
+    });
+  } catch (err) {
+    next(err);
   }
-  return filter;
-}
-export async function listAudit(req, res) {
-  const filter = await filterFor(req.query),
-    { page, limit, skip } = paging(req.query);
-  const [items, total] = await Promise.all([
-    AuditLog.find(filter)
-      .populate("user", "name email")
-      .populate("evidence", "evidenceId title")
-      .sort({ timestamp: -1, _id: -1 })
-      .skip(skip)
-      .limit(limit),
-    AuditLog.countDocuments(filter),
-  ]);
-  ok(res, { items, total, page, pages: Math.max(1, Math.ceil(total / limit)) });
-}
-export async function exportAudit(req, res) {
-  const filter = await filterFor(req.query);
-  const xml = create({ version: "1.0" }).ele("AuditLogs");
-  for await (const log of AuditLog.find(filter)
-    .populate("user", "name")
-    .populate("evidence", "evidenceId")
-    .sort({ timestamp: 1 })
-    .cursor()) {
-    const node = xml.ele("Log");
-    for (const [key, value] of Object.entries({
-      Action: log.action,
-      EvidenceId: log.evidence?.evidenceId,
-      User: log.user?.name || "Unauthenticated",
-      Details: log.details,
-      Timestamp: log.timestamp.toISOString(),
-    }))
-      node.ele(key).txt(value || "");
+};
+
+// @desc    Export audit logs as XML file
+// @route   GET /api/audit/export/xml
+// @access  Private (Admin)
+const exportAuditLogsXml = async (req, res, next) => {
+  try {
+    const { data: logs, error } = await supabase
+      .from('audit_logs')
+      .select('*')
+      .order('timestamp', { ascending: false })
+      .limit(500);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    let populated = await populateUsers(logs || [], ['user']);
+    populated = await populateEvidence(populated);
+
+    const root = create({ version: '1.0', encoding: 'UTF-8' }).ele('AuditLogs', {
+      generatedAt: new Date().toISOString(),
+      system: 'P.R.A.M.A.N Digital Evidence System',
+      totalRecords: populated.length,
+    });
+
+    for (const log of populated) {
+      const logNode = root.ele('Log');
+      logNode.ele('Action').txt(log.action || 'UNKNOWN');
+      logNode.ele('EvidenceId').txt(log.evidence && typeof log.evidence === 'object' ? log.evidence.evidenceId : 'N/A');
+      logNode.ele('CaseNumber').txt(log.evidence && typeof log.evidence === 'object' ? log.evidence.caseNumber : 'N/A');
+      logNode.ele('User').txt(log.user && typeof log.user === 'object' ? `${log.user.name} (${log.user.role})` : 'System');
+      logNode.ele('Details').txt(log.details || '');
+      logNode.ele('IPAddress').txt(log.ipAddress || '127.0.0.1');
+      logNode.ele('Timestamp').txt(log.timestamp ? new Date(log.timestamp).toISOString() : '');
+    }
+
+    const xmlString = root.end({ prettyPrint: true });
+
+    await logAudit({
+      req,
+      action: 'XML_EXPORTED',
+      details: `Audit trail exported to XML (${populated.length} records) by ${req.user.name}`,
+    });
+
+    res.header('Content-Type', 'application/xml');
+    res.attachment('praman-audit-logs.xml');
+    return res.send(xmlString);
+  } catch (err) {
+    next(err);
   }
-  await audit(req, "XML_EXPORTED", null, "Audit export");
-  res
-    .attachment("praman-audit.xml")
-    .type("application/xml")
-    .send(xml.end({ prettyPrint: true }));
-}
+};
+
+module.exports = {
+  getAuditLogs,
+  exportAuditLogsXml,
+};

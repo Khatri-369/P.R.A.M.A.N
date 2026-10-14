@@ -1,30 +1,34 @@
 {
   "name": "praman",
   "version": "1.0.0",
-  "private": true,
-  "type": "module",
+  "description": "P.R.A.M.A.N - Portal for Recording and Managing Authentic Nodes (Digital Evidence Management & Chain of Custody Prototype)",
+  "main": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js",
-    "dev": "node --watch backend/server.js",
-    "seed": "node backend/seed.js",
-    "demo": "node backend/demo.js",
-    "test": "node --test --test-concurrency=1 tests/integration.test.js"
+    "dev": "nodemon backend/server.js",
+    "seed": "node scripts/seed.js",
+    "test": "node scripts/test-api.js && node scripts/test-court-officer.js"
   },
+  "keywords": [
+    "evidence-management",
+    "chain-of-custody",
+    "sha-256",
+    "forensics",
+    "praman"
+  ],
+  "author": "PRAMAN Development Team",
+  "license": "ISC",
   "dependencies": {
-    "bcrypt": "^6.0.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^5.1.0",
-    "express-rate-limit": "^8.1.0",
-    "helmet": "^8.1.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.19.1",
-    "multer": "^2.0.2",
-    "xmlbuilder2": "^4.0.0"
+    "multer": "^1.4.5-lts.1",
+    "xmlbuilder2": "^3.1.1"
   },
   "devDependencies": {
-    "mongodb-memory-server": "^10.2.3",
-    "prettier": "^3.9.9",
-    "supertest": "^7.1.4"
+    "nodemon": "^3.1.4"
   }
 }

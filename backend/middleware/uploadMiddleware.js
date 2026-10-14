@@ -1,65 +1,64 @@
-import multer from "multer";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { randomUUID } from "node:crypto";
-import { mkdirSync } from "node:fs";
-import { open } from "node:fs/promises";
-import { fail } from "../utils/common.js";
-export const uploadDirectory =
-  process.env.UPLOAD_DIR ||
-  fileURLToPath(new URL("../uploads/", import.meta.url));
-mkdirSync(uploadDirectory, { recursive: true });
-const allowed = {
-  ".pdf": "application/pdf",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".png": "image/png",
-  ".txt": "text/plain",
-  ".docx":
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-};
-export const upload = multer({
-  storage: multer.diskStorage({
-    destination: uploadDirectory,
-    filename: (req, file, cb) =>
-      cb(null, randomUUID() + path.extname(file.originalname).toLowerCase()),
-  }),
-  limits: { fileSize: 10 * 1024 * 1024, files: 1, fields: 6 },
-  fileFilter: (req, file, cb) => {
-    const extension = path.extname(file.originalname).toLowerCase();
-    if (allowed[extension] !== file.mimetype)
-      return cb(
-        Object.assign(
-          new Error(
-            "Allowed files: PDF, JPG, PNG, TXT and DOCX with matching MIME types.",
-          ),
-          { status: 400 },
-        ),
-      );
-    cb(null, true);
-  },
-}).single("file");
-export async function inspectFile(file) {
-  const handle = await open(file.path, "r");
-  const buffer = Buffer.alloc(8192);
-  let bytesRead;
-  try {
-    ({ bytesRead } = await handle.read(buffer, 0, buffer.length, 0));
-  } finally {
-    await handle.close();
-  }
-  const b = buffer.subarray(0, bytesRead),
-    extension = path.extname(file.originalname).toLowerCase();
-  const valid =
-    extension === ".pdf"
-      ? b.subarray(0, 5).toString() === "%PDF-"
-      : extension === ".png"
-        ? b.subarray(0, 8).equals(Buffer.from("89504e470d0a1a0a", "hex"))
-        : [".jpg", ".jpeg"].includes(extension)
-          ? b[0] === 255 && b[1] === 216 && b[2] === 255
-          : extension === ".docx"
-            ? b.subarray(0, 4).equals(Buffer.from("504b0304", "hex")) &&
-              b.includes(Buffer.from("[Content_Types].xml"))
-            : b.length > 0 && !b.includes(0);
-  if (!valid) fail(400, "File contents do not match the selected file type.");
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+const uploadDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
+
+// Allowed MIME types and extensions
+const allowedMimes = [
+  'application/pdf',
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'text/plain',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword',
+  'application/octet-stream', // often for binary/raw log evidence
+];
+
+const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.txt', '.docx', '.doc', '.log', '.bin'];
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    // Sanitize filename: replace spaces and special characters with hyphens
+    const ext = path.extname(file.originalname).toLowerCase();
+    const basename = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `ev-${basename}-${uniqueSuffix}${ext}`);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  const ext = path.extname(file.originalname).toLowerCase();
+  const mime = file.mimetype.toLowerCase();
+
+  const isExtValid = allowedExtensions.includes(ext);
+  const isMimeValid = allowedMimes.includes(mime) || mime.startsWith('image/') || mime.startsWith('text/');
+
+  if (isExtValid && isMimeValid) {
+    cb(null, true);
+  } else {
+    cb(
+      new Error(
+        `Unsupported file type (${ext}). Allowed formats: PDF, JPG, JPEG, PNG, TXT, DOCX, LOG.`
+      ),
+      false
+    );
+  }
+};
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10 MB limit
+  },
+  fileFilter,
+});
+
+module.exports = upload;

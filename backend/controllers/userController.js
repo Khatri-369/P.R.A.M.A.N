@@ -1,78 +1,185 @@
-import bcrypt from "bcrypt";
-import User from "../models/User.js";
-import Evidence from "../models/Evidence.js";
-import { audit, fail, field, id, ok, transaction } from "../utils/common.js";
-export async function listUsers(req, res) {
-  ok(res, await User.find().sort({ createdAt: -1 }));
-}
-export async function recipients(req, res) {
-  ok(
-    res,
-    await User.find({
-      isActive: true,
-      role: { $in: ["investigator", "forensic"] },
-    }).select("name email role"),
-  );
-}
-export async function createUser(req, res) {
-  const name = field(req.body.name, "Name", 100),
-    email = field(req.body.email, "Email", 254).toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-    fail(400, "Enter a valid email.");
-  const password = field(req.body.password, "Password", 72);
-  if (Buffer.byteLength(password) > 72 || password.length < 8)
-    fail(400, "Password must have 8–72 bytes.");
-  if (!["admin", "investigator", "forensic"].includes(req.body.role))
-    fail(400, "Invalid role.");
-  const hashed = await bcrypt.hash(password, 12);
-  let user;
-  await transaction(async (session) => {
-    [user] = await User.create(
-      [{ name, email, role: req.body.role, password: hashed }],
-      { session },
-    );
-    await audit(
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+const { supabase } = require('../config/db');
+const { logAudit } = require('../utils/auditLogger');
+
+// @desc    Get all users (with optional role or status filter)
+// @route   GET /api/users
+// @access  Private (Admin)
+const getAllUsers = async (req, res, next) => {
+  try {
+    const { role, active } = req.query;
+
+    let query = supabase.from('users').select('id, name, email, role, isActive, createdAt').order('createdAt', { ascending: false });
+
+    if (role) {
+      query = query.eq('role', role);
+    }
+    if (active !== undefined) {
+      query = query.eq('isActive', active === 'true');
+    }
+
+    const { data: users, error } = await query;
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const formattedUsers = (users || []).map((u) => ({
+      ...u,
+      _id: u.id,
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: formattedUsers.length,
+      data: formattedUsers,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Create new user by administrator
+// @route   POST /api/users
+// @access  Private (Admin)
+const createUser = async (req, res, next) => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, email, password, and role are all required fields.',
+      });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const { data: existing } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', normalizedEmail)
+      .maybeSingle();
+
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: 'A user with this email already exists.',
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const userId = crypto.randomUUID();
+
+    const { data: newUser, error } = await supabase
+      .from('users')
+      .insert({
+        id: userId,
+        name: name.trim(),
+        email: normalizedEmail,
+        password: hashedPassword,
+        role,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+      })
+      .select('id, name, email, role, isActive, createdAt')
+      .single();
+
+    if (error || !newUser) {
+      throw new Error(error ? error.message : 'Failed to create user');
+    }
+
+    await logAudit({
       req,
-      "USER_CREATED",
-      null,
-      `${name} (${req.body.role})`,
-      session,
-    );
-  });
-  ok(
-    res,
-    { id: user.id, name, email, role: user.role, isActive: user.isActive },
-    "User created.",
-    201,
-  );
-}
-export async function userStatus(req, res) {
-  id(req.params.id);
-  if (req.params.id === req.user.id)
-    fail(400, "You cannot deactivate your own account.");
-  if (typeof req.body.isActive !== "boolean")
-    fail(400, "isActive must be true or false.");
-  let user;
-  await transaction(async (session) => {
-    user = await User.findById(req.params.id).session(session);
-    if (!user) fail(404, "User not found.");
-    if (
-      !req.body.isActive &&
-      (await Evidence.exists({ currentHolder: user._id }).session(session))
-    )
-      fail(
-        409,
-        "Reassign this user’s evidence before deactivating the account.",
-      );
-    user.isActive = req.body.isActive;
-    await user.save({ session });
-    await audit(
+      action: 'USER_CREATED',
+      details: `New ${role} account created: ${newUser.email} by Admin (${req.user.email})`,
+    });
+
+    const userObj = {
+      ...newUser,
+      _id: newUser.id,
+    };
+
+    res.status(201).json({
+      success: true,
+      message: `User ${newUser.name} created successfully.`,
+      data: userObj,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Toggle or update user active status (deactivate/activate)
+// @route   PATCH /api/users/:id/status
+// @access  Private (Admin)
+const toggleUserStatus = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+
+    const { data: user, error: fetchErr } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (fetchErr || !user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found.',
+      });
+    }
+
+    // Prevent admin from deactivating their own account
+    const currentAdminId = req.user.id || req.user._id;
+    if (String(user.id) === String(currentAdminId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'You cannot deactivate your own administrative account.',
+      });
+    }
+
+    const updatedIsActive = !user.isActive;
+
+    const { data: updatedUser, error: updateErr } = await supabase
+      .from('users')
+      .update({ isActive: updatedIsActive })
+      .eq('id', userId)
+      .select('id, name, email, role, isActive')
+      .single();
+
+    if (updateErr) {
+      throw new Error(updateErr.message);
+    }
+
+    const action = updatedIsActive ? 'USER_ACTIVATED' : 'USER_DEACTIVATED';
+    await logAudit({
       req,
-      user.isActive ? "USER_ACTIVATED" : "USER_DEACTIVATED",
-      null,
-      user.name,
-      session,
-    );
-  });
-  ok(res, user);
-}
+      action,
+      details: `Account for ${user.email} was ${updatedIsActive ? 'activated' : 'deactivated'} by ${req.user.email}`,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `User ${user.email} is now ${updatedIsActive ? 'active' : 'deactivated'}.`,
+      data: {
+        id: updatedUser.id,
+        _id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        isActive: updatedUser.isActive,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  getAllUsers,
+  createUser,
+  toggleUserStatus,
+};

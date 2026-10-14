@@ -1,132 +1,272 @@
-import { api, escape, task } from "./api.js";
-import { icon, roleName, skeleton } from "./ui.js";
-const pages = [
-  ["dashboard", "Overview", "dashboard", ["admin", "investigator", "forensic"]],
-  [
-    "evidence",
-    "Evidence registry",
-    "evidence",
-    ["admin", "investigator", "forensic"],
-  ],
-  ["upload", "Upload evidence", "upload", ["investigator"]],
-  [
-    "custody",
-    "Chain of custody",
-    "custody",
-    ["admin", "investigator", "forensic"],
-  ],
-  ["audit", "Audit logs", "audit", ["admin"]],
-  ["users", "Team & access", "users", ["admin"]],
-];
-export async function shell(page) {
-  if (!sessionStorage.getItem("token")) {
-    location.replace("/");
-    return false;
-  }
-  let current;
+/**
+ * P.R.A.M.A.N — Authentication & Role-Based Navigation Controller
+ */
+
+function getToken() {
+  return localStorage.getItem('praman_token');
+}
+
+function getUser() {
+  const userJson = localStorage.getItem('praman_user');
   try {
-    current = await api("/auth/me");
-    sessionStorage.setItem("user", JSON.stringify(current));
-  } catch {
-    location.replace("/");
-    return false;
+    return userJson ? JSON.parse(userJson) : null;
+  } catch (e) {
+    return null;
   }
-  const rule = pages.find((p) => p[0] === page);
-  if (rule && !rule[3].includes(current.role)) {
-    location.replace("/dashboard.html");
-    return false;
+}
+
+function isAuthenticated() {
+  return !!getToken();
+}
+
+// Guard page access based on user role
+function requireAuth(allowedRoles = []) {
+  if (!isAuthenticated()) {
+    window.location.href = 'index.html';
+    return;
   }
-  document.body.dataset.page = page;
-  const content = document.querySelector("main");
-  content.id = "main-content";
-  content.tabIndex = -1;
-  const initials = current.name
-    .split(" ")
-    .map((s) => s[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-  document.querySelector("#shell").innerHTML =
-    `<a class="skip-link" href="#main-content">Skip to content</a><button class="nav-backdrop" hidden aria-label="Close navigation"></button><aside class="sidebar" id="navigation"><div class="sidebar-brand"><a class="brand" href="/dashboard.html"><span class="brand-mark">${icon("shield")}</span><span>PRAMĀN<small>EVIDENCE INTELLIGENCE</small></span></a><button class="nav-close icon-button" aria-label="Close navigation">${icon("close")}</button></div><div class="workspace-label"><span class="workspace-symbol">P</span><div>Evidence workspace<small>Investigation & forensics</small></div>${icon("lock")}</div><div class="nav-label">WORKSPACE</div><nav aria-label="Main navigation">${pages
-      .filter((p) => p[3].includes(current.role))
-      .map(([key, label, symbol]) => {
-        const active =
-          key === page || (page === "details" && key === "evidence");
-        return `<a class="nav-link ${active ? "active" : ""}" ${active ? 'aria-current="page"' : ""} href="/${key}.html">${icon(symbol)}<span>${label}</span>${active ? '<span class="nav-active-dot"></span>' : ""}</a>`;
-      })
-      .join(
-        "",
-      )}</nav><div class="sidebar-footer"><div class="sidebar-note">${icon("shield")}<div>Every action. Accounted for.<small>Record · Verify · Trace</small></div></div><div class="account"><span class="avatar">${escape(initials)}</span><div><strong>${escape(current.name)}</strong><small>${escape(roleName(current.role))}</small></div></div><button id="logout" class="logout">${icon("logout")}<span>Sign out</span>${icon("arrow")}</button></div></aside>`;
-  document.querySelector("#topbar").innerHTML =
-    `<div class="breadcrumb"><button class="mobile-menu icon-button" aria-label="Open navigation" aria-expanded="false" aria-controls="navigation">${icon("menu")}</button><span class="breadcrumb-root">Workspace</span><span class="breadcrumb-separator">/</span><strong>${escape(rule?.[1] || "Evidence record")}</strong></div><div class="topbar-account"><span class="role-badge">${icon("shield")}${escape(roleName(current.role))}</span><span class="avatar" title="${escape(current.name)}">${escape(initials)}</span></div>`;
-  const sidebar = document.querySelector(".sidebar"),
-    toggle = document.querySelector(".mobile-menu"),
-    backdrop = document.querySelector(".nav-backdrop"),
-    mobile = window.matchMedia("(max-width: 800px)");
-  function setNavigation(open, returnFocus = true) {
-    sidebar.classList.toggle("open", open);
-    backdrop.hidden = !open;
-    document.body.classList.toggle("nav-open", open);
-    toggle.setAttribute("aria-expanded", String(open));
-    sidebar.inert = mobile.matches && !open;
-    if (open) sidebar.querySelector(".nav-close").focus();
-    else if (returnFocus && mobile.matches) toggle.focus();
+
+  const user = getUser();
+  if (!user) {
+    window.location.href = 'index.html';
+    return;
   }
-  toggle.onclick = () => setNavigation(true);
-  backdrop.onclick = () => setNavigation(false);
-  document.querySelector(".nav-close").onclick = () => setNavigation(false);
-  document.addEventListener("keydown", (event) => {
-    if (!sidebar.classList.contains("open")) return;
-    if (event.key === "Escape") setNavigation(false);
-    if (event.key === "Tab") {
-      const elements = [...sidebar.querySelectorAll("a,button")].filter(
-          (el) => el.getClientRects().length,
-        ),
-        first = elements[0],
-        last = elements.at(-1);
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
+
+  const currentFile = window.location.pathname.split('/').pop() || 'index.html';
+
+  // 1. Court Officer Routing & Protection
+  if (user.role === 'court_officer') {
+    const courtAllowedPages = [
+      'court-dashboard.html',
+      'court-evidence.html',
+      'court-review.html',
+      'court-report.html',
+      'court-activity.html',
+      'custody.html',
+      'evidence-details.html',
+    ];
+    if (!courtAllowedPages.includes(currentFile) && currentFile !== '') {
+      window.location.href = 'court-dashboard.html';
+      return;
     }
-  });
-  mobile.addEventListener("change", () => setNavigation(false, false));
-  setNavigation(false, false);
-  document.querySelector("#logout").onclick = (event) =>
-    task(event.currentTarget, async () => {
-      await api("/auth/logout", { method: "POST" });
-      sessionStorage.clear();
-      location.href = "/";
-    });
-  document
-    .querySelectorAll(
-      "#records:empty,#detail:empty,#activity:empty,#types:empty",
-    )
-    .forEach((el) => (el.innerHTML = skeleton()));
-  return true;
+  }
+
+  // 2. Non-Court Roles Blocked from Court Pages (Except Admin)
+  if (user.role !== 'court_officer' && user.role !== 'admin' && currentFile.startsWith('court-')) {
+    window.location.href = 'dashboard.html';
+    return;
+  }
+
+  // 3. Investigator Role Protection
+  if (user.role === 'investigator') {
+    const invAllowedPages = ['dashboard.html', 'evidence.html', 'upload.html', 'custody.html', 'evidence-details.html', ''];
+    if (!invAllowedPages.includes(currentFile)) {
+      alert(`Access Denied: 'Investigator' role is not authorized to access ${currentFile}`);
+      window.location.href = 'dashboard.html';
+      return;
+    }
+  }
+
+  // 4. Forensic Expert Role Protection
+  if (user.role === 'forensic') {
+    const forensicAllowedPages = ['dashboard.html', 'evidence.html', 'custody.html', 'evidence-details.html', ''];
+    if (!forensicAllowedPages.includes(currentFile)) {
+      alert(`Access Denied: 'Forensic Expert' role is not authorized to access ${currentFile}`);
+      window.location.href = 'dashboard.html';
+      return;
+    }
+  }
+
+  // 5. System Admin Role Protection (Observer only: zero access to evidence ingestion)
+  if (user.role === 'admin' && currentFile === 'upload.html') {
+    alert(`Access Denied: System Admin is an observer for governance and cannot ingest or upload evidence files.`);
+    window.location.href = 'dashboard.html';
+    return;
+  }
+
+  // Explicit allowedRoles check if passed
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+    alert(`Access Denied: '${user.role}' role is not authorized to view this page.`);
+    if (user.role === 'court_officer') {
+      window.location.href = 'court-dashboard.html';
+    } else {
+      window.location.href = 'dashboard.html';
+    }
+  }
 }
-const login = document.querySelector("#login-form");
-if (login) {
-  document.querySelector("#password-toggle").onclick = (event) => {
-    const password = login.elements.password,
-      showing = password.type === "password";
-    password.type = showing ? "text" : "password";
-    event.currentTarget.textContent = showing ? "Hide" : "Show";
-    event.currentTarget.setAttribute("aria-pressed", String(showing));
-  };
-  login.addEventListener("submit", (event) => {
-    event.preventDefault();
-    task(login.querySelector('[type="submit"]'), async () => {
-      const data = await api("/auth/login", {
-        method: "POST",
-        body: Object.fromEntries(new FormData(login)),
-      });
-      sessionStorage.setItem("token", data.token);
-      sessionStorage.setItem("user", JSON.stringify(data.user));
-      location.href = "/dashboard.html";
-    });
-  });
+
+// Log out handler
+async function handleLogout() {
+  try {
+    if (typeof api !== 'undefined') {
+      await api.post('/auth/logout', {});
+    }
+  } catch (e) {
+    // ignore network error on logout
+  } finally {
+    localStorage.removeItem('praman_token');
+    localStorage.removeItem('praman_user');
+    window.location.href = 'index.html';
+  }
 }
+
+// Initialize navigation UI & role filtering dynamically
+function initNavigation() {
+  const user = getUser();
+  if (!user) return;
+
+  const currentPath = window.location.pathname.split('/').pop() || 'dashboard.html';
+  const sidebarNav = document.querySelector('.sidebar-nav');
+  const sidebarHeader = document.querySelector('.sidebar-header');
+
+  if (user.role === 'court_officer') {
+    // Judicial Chamber Navigation Sidebar
+    if (sidebarHeader) {
+      sidebarHeader.innerHTML = `
+        <span class="brand-badge" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border-color: rgba(245, 158, 11, 0.3);">JUDICIAL CHAMBER</span>
+        <div class="sidebar-title">
+          <span>⚖️</span> P.R.A.M.A.N
+        </div>
+        <div class="sidebar-subtitle">Court Evidence Admissibility & Verification Node</div>
+      `;
+    }
+
+    if (sidebarNav) {
+      sidebarNav.innerHTML = `
+        <div class="nav-section-title">Judicial Proceedings</div>
+        <a href="court-dashboard.html" class="nav-item ${currentPath === 'court-dashboard.html' ? 'active' : ''}">
+          <span class="nav-icon">⚖️</span>
+          <span>Court Dashboard</span>
+        </a>
+        <a href="court-evidence.html" class="nav-item ${currentPath === 'court-evidence.html' ? 'active' : ''}">
+          <span class="nav-icon">📜</span>
+          <span>Court Evidence</span>
+        </a>
+        <a href="court-review.html" class="nav-item ${currentPath === 'court-review.html' ? 'active' : ''}">
+          <span class="nav-icon">🔍</span>
+          <span>Court Review</span>
+        </a>
+        <a href="custody.html" class="nav-item ${currentPath === 'custody.html' ? 'active' : ''}">
+          <span class="nav-icon">⛓️</span>
+          <span>Chain of Custody</span>
+        </a>
+        <a href="court-report.html" class="nav-item ${currentPath === 'court-report.html' ? 'active' : ''}">
+          <span class="nav-icon">🖨️</span>
+          <span>Court Reports</span>
+        </a>
+        <a href="court-activity.html" class="nav-item ${currentPath === 'court-activity.html' ? 'active' : ''}">
+          <span class="nav-icon">⚡</span>
+          <span>Court Activity</span>
+        </a>
+      `;
+    }
+  } else {
+    // Non-Court Roles Navigation (Admin, Investigator, Forensic Expert)
+    if (sidebarHeader) {
+      const badgeText =
+        user.role === 'admin'
+          ? 'SYSTEM ADMIN'
+          : user.role === 'forensic'
+          ? 'FORENSIC LAB'
+          : 'INVESTIGATION UNIT';
+      sidebarHeader.innerHTML = `
+        <span class="brand-badge">${badgeText}</span>
+        <div class="sidebar-title">
+          <span>🛡️</span> P.R.A.M.A.N
+        </div>
+        <div class="sidebar-subtitle">Portal for Recording and Managing Authentic Nodes</div>
+      `;
+    }
+
+    if (sidebarNav) {
+      let navHtml = `
+        <div class="nav-section-title">Evidence Workspace</div>
+        <a href="dashboard.html" class="nav-item ${currentPath === 'dashboard.html' || currentPath === '' ? 'active' : ''}">
+          <span class="nav-icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="evidence.html" class="nav-item ${currentPath === 'evidence.html' ? 'active' : ''}">
+          <span class="nav-icon">📁</span>
+          <span>Evidence Vault</span>
+        </a>
+      `;
+
+      // Upload link: Investigator ONLY
+      if (user.role === 'investigator') {
+        navHtml += `
+          <a href="upload.html" id="nav-upload" class="nav-item ${currentPath === 'upload.html' ? 'active' : ''}">
+            <span class="nav-icon">📤</span>
+            <span>Upload Evidence</span>
+          </a>
+        `;
+      }
+
+      // Chain of Custody: Admin, Investigator, Forensic
+      navHtml += `
+        <a href="custody.html" class="nav-item ${currentPath === 'custody.html' ? 'active' : ''}">
+          <span class="nav-icon">⛓️</span>
+          <span>Chain of Custody</span>
+        </a>
+      `;
+
+      // Administration section: Admin ONLY
+      if (user.role === 'admin') {
+        navHtml += `
+          <div class="nav-section-title">Administration</div>
+          <a href="audit.html" id="nav-audit" class="nav-item ${currentPath === 'audit.html' ? 'active' : ''}">
+            <span class="nav-icon">📜</span>
+            <span>Audit Logs</span>
+          </a>
+          <a href="users.html" id="nav-users" class="nav-item ${currentPath === 'users.html' ? 'active' : ''}">
+            <span class="nav-icon">👥</span>
+            <span>User Management</span>
+          </a>
+        `;
+      }
+
+      sidebarNav.innerHTML = navHtml;
+    }
+  }
+
+  // User Profile in Footer
+  const userNameEl = document.getElementById('sidebar-user-name');
+  const userRoleEl = document.getElementById('sidebar-user-role');
+  const userAvatarEl = document.getElementById('sidebar-user-avatar');
+
+  if (userNameEl) userNameEl.textContent = user.name;
+  if (userRoleEl) userRoleEl.textContent = user.role.replace('_', ' ').toUpperCase();
+  if (userAvatarEl) {
+    const initials = user.name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase();
+    userAvatarEl.textContent = initials || 'US';
+  }
+
+  // Logout Button Listener
+  const logoutBtn = document.getElementById('btn-logout');
+  if (logoutBtn) {
+    logoutBtn.onclick = (e) => {
+      e.preventDefault();
+      handleLogout();
+    };
+  }
+
+  // Mobile menu toggle
+  const toggleBtn = document.getElementById('mobile-toggle');
+  const sidebar = document.querySelector('.sidebar');
+  if (toggleBtn && sidebar) {
+    toggleBtn.onclick = () => {
+      sidebar.classList.toggle('open');
+    };
+  }
+}
+
+// Run navigation initialization on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  if (!window.location.pathname.endsWith('index.html') && !window.location.pathname.endsWith('/')) {
+    initNavigation();
+  }
+});

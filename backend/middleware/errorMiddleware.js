@@ -1,25 +1,42 @@
-export function errorHandler(error, req, res, next) {
-  if (res.headersSent) return next(error);
-  let status = error.status || 500,
-    message = error.message;
-  if (error.code === 11000) {
-    status = 409;
-    message = "This record already exists.";
+const errorHandler = (err, req, res, next) => {
+  console.error(`[PRAMAN Server Error] ${req.method} ${req.originalUrl}:`, err.message);
+
+  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  let message = err.message || 'Internal Server Error';
+
+  // Multer file size / upload errors
+  if (err.name === 'MulterError') {
+    statusCode = 400;
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      message = 'File size limit exceeded. Maximum file size allowed is 10 MB.';
+    } else {
+      message = `File upload error: ${err.message}`;
+    }
   }
-  if (error.name === "ValidationError" || error.name === "CastError") {
-    status = 400;
-    message = "Invalid request data.";
+
+  // Supabase / PostgreSQL unique constraint violation (code 23505)
+  if (err.code === '23505') {
+    statusCode = 400;
+    message = 'Duplicate record found. A record with this unique identifier already exists.';
   }
-  if (error.code === "LIMIT_FILE_SIZE") {
-    status = 413;
-    message = "Maximum file size is 10 MB.";
-  } else if (error.name === "MulterError") {
-    status = 400;
-    message = "Provide one evidence file in the file field.";
+
+  // Supabase / PostgreSQL foreign key violation (code 23503)
+  if (err.code === '23503') {
+    statusCode = 400;
+    message = 'Referenced entity not found or invalid reference.';
   }
-  if (status >= 500) {
-    console.error(error.name, error.code || "");
-    message = "The request could not be completed. Please try again.";
+
+  // Validation or bad request error
+  if (err.name === 'ValidationError') {
+    statusCode = 400;
+    message = err.message || 'Validation error';
   }
-  res.status(status).json({ success: false, message });
-}
+
+  res.status(statusCode).json({
+    success: false,
+    message,
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+  });
+};
+
+module.exports = errorHandler;
