@@ -36,6 +36,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         <a href="evidence.html" class="btn btn-primary btn-sm">
           <span>📁</span> Open Evidence Vault
         </a>
+        <a href="audit.html" class="btn btn-secondary btn-sm" style="margin-left: 8px;">
+          <span>📜</span> Inspect Audit Logs
+        </a>
       `;
     }
     if (statLabel3) statLabel3.textContent = 'Pending Forensic Check';

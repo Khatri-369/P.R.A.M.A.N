@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +8,11 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet">
 </head>
+
 <body>
 
   <div class="app-shell">
@@ -96,7 +100,8 @@
                   <label class="form-label" for="evidence-title">
                     Evidence Title <span class="required">*</span>
                   </label>
-                  <input type="text" id="evidence-title" class="form-control" placeholder="e.g. Server Access Log Dump" required>
+                  <input type="text" id="evidence-title" class="form-control" placeholder="e.g. Server Access Log Dump"
+                    required>
                 </div>
 
                 <div class="form-group">
@@ -123,7 +128,8 @@
 
               <div class="form-group">
                 <label class="form-label" for="evidence-description">Description & Provenance</label>
-                <textarea id="evidence-description" class="form-control" rows="3" placeholder="Provide background on where this artifact was extracted, hardware serial numbers, or context..."></textarea>
+                <textarea id="evidence-description" class="form-control" rows="3"
+                  placeholder="Provide background on where this artifact was extracted, hardware serial numbers, or context..."></textarea>
               </div>
 
               <!-- File Upload Input -->
@@ -133,16 +139,19 @@
                 </label>
                 <input type="file" id="evidence-file" class="form-control" required>
                 <p id="file-notice" style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">
-                  Allowed formats: PDF, JPG, PNG, TXT, DOCX, LOG. Maximum file size: 10 MB. SHA-256 hash will be computed via stream.
+                  Allowed formats: PDF, JPG, PNG, TXT, DOCX, LOG. Maximum file size: 10 MB. SHA-256 hash will be
+                  computed via stream.
                 </p>
               </div>
 
               <div class="form-group">
                 <label class="form-label" for="evidence-notes">Initial Forensic Intake Notes</label>
-                <textarea id="evidence-notes" class="form-control" rows="2" placeholder="e.g. Acquired via write-blocker; original hardware sealed in anti-static bag."></textarea>
+                <textarea id="evidence-notes" class="form-control" rows="2"
+                  placeholder="e.g. Acquired via write-blocker; original hardware sealed in anti-static bag."></textarea>
               </div>
 
-              <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; border-top: 1px solid var(--border); padding-top: 18px;">
+              <div
+                style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; border-top: 1px solid var(--border); padding-top: 18px;">
                 <a href="evidence.html" class="btn btn-secondary">Cancel</a>
                 <button type="submit" id="btn-submit-upload" class="btn btn-primary" style="padding: 10px 24px;">
                   <span>🔒</span> Ingest & Generate SHA-256
@@ -159,4 +168,5 @@
   <script src="js/auth.js"></script>
   <script src="js/upload.js"></script>
 </body>
+
 </html>

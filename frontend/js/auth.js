@@ -104,7 +104,7 @@ function requireAuth(allowedRoles = []) {
 
   // 4. Forensic Expert Role Protection
   if (user.role === 'forensic') {
-    const forensicAllowedPages = ['dashboard.html', 'evidence.html', 'custody.html', 'evidence-details.html', ''];
+    const forensicAllowedPages = ['dashboard.html', 'evidence.html', 'custody.html', 'evidence-details.html', 'audit.html', ''];
     if (!forensicAllowedPages.includes(currentFile)) {
       alert(`Access Denied: 'Forensic Expert' role is not authorized to access ${currentFile}`);
       window.location.replace('dashboard.html');
@@ -245,6 +245,17 @@ function initNavigation() {
           <span>Chain of Custody</span>
         </a>
       `;
+
+      // Forensic Audit section: Forensic Lab
+      if (user.role === 'forensic') {
+        navHtml += `
+          <div class="nav-section-title">Forensic Audit</div>
+          <a href="audit.html" id="nav-audit" class="nav-item ${currentPath === 'audit.html' ? 'active' : ''}">
+            <span class="nav-icon">📜</span>
+            <span>Audit Logs</span>
+          </a>
+        `;
+      }
 
       // Administration section: Admin ONLY
       if (user.role === 'admin') {
